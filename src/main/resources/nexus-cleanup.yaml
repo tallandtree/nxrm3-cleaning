@@ -1,0 +1,5 @@
+default:
+  max_versions: 5
+  last_downloaded:
+    amount: 30
+    unit: day

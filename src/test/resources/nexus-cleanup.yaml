@@ -1,0 +1,48 @@
+default:
+  max_versions: 5
+  last_downloaded:
+    amount: 30
+    unit: day
+
+team-x-mvn-release:
+  myapp.assembly.install.complete:
+    "7.110.0.4":
+      keep: forever
+
+team-y-docker-internal:
+  cm/haproxy:
+    "1.7_4":
+      keep: forever
+
+team-z-nuget-internal:
+  Company.Tools.Common:
+    "2.4.3.39":
+      keep: forever
+
+team-z-docker-internal:
+  last_downloaded:
+    amount: 40
+    unit: day
+  mygrp/build-template-backend:
+    last_downloaded:
+      amount: 50
+      unit: day
+    1.3.*:
+      keep: forever
+    1.2.*:
+      last_downloaded:
+        amount: 60
+        unit: day
+  mygrp/build-*:
+    last_downloaded:
+      amount: 50
+      unit: day
+    1.3.*:
+      max_versions: 10
+      last_downloaded:
+        amount: 3
+        unit: month
+    1.2.*:
+      last_downloaded:
+        amount: 50
+        unit: day

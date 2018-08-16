@@ -1,0 +1,22 @@
+group 'cm-servers'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'groovy'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+    compile group: 'joda-time', name: 'joda-time', version: jodaVersion
+    compile group: 'org.sonatype.nexus', name: 'nexus-core', version: nexusVersion
+    compile group: 'org.sonatype.nexus', name: 'nexus-script', version: nexusVersion
+    compile group: 'org.sonatype.nexus', name: 'nexus-security', version: nexusVersion
+    compile group: 'org.yaml', name: 'snakeyaml', version: snakeYamlVersion
+
+    testCompile group: 'junit', name: 'junit', version: junitVersion
+    testCompile "org.spockframework:spock-core:1.1-groovy-2.4"
+    testCompile "net.bytebuddy:byte-buddy:1.6.5"
+    testCompile "org.slf4j:slf4j-nop:1.7.25"
+}
