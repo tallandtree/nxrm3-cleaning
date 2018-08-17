@@ -151,7 +151,7 @@ team-x-docker-internal:
         unit: day
 ```
 
-## Examples regular expressions to be used for versions
+### Regular expressions to be used for versions
 
 To match a certain pattern in a version, you can use a regular expression.
 
