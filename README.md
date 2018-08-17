@@ -54,7 +54,7 @@ Important notes about the format:
 And:
 
 > If a definition only includes numbers and underscores, it is parsed by YAML as 
-> an integer and all underscores are stripped. E.g. 1.7_4 will be parsed as 1.74. 
+> an integer and all underscores are stripped. E.g. 1.7\_4 will be parsed as 1.74. 
 > To ensure the object becomes a string, it should be surrounded by quotes.
 >
 > See https://docs.saltstack.com/en/develop/topics/troubleshooting/yaml_idiosyncrasies.html
@@ -139,7 +139,7 @@ team-x-docker-internal:
       last_downloaded:
         amount: 60
         unit: day
-  mygrpv/build-*:
+  mygrpv/build-.*:
     last_downloaded:
       amount: 50
       unit: day
@@ -149,6 +149,35 @@ team-x-docker-internal:
       last_downloaded:
         amount: 50
         unit: day
+```
+
+## Examples regular expressions to be used for versions
+
+To match a certain pattern in a version, you can use a regular expression.
+
+The regular expression `"^(.*)(BUILD|SNAPSHOT)(.*)$"` matches all versions that contain either the word
+"BUILD" or "SNAPSHOT". 
+Or `"^((?!SNAPSHOT|BUILD).)*$"` matches all versions that do not contain the words "BUILD" or "SNAPSHOT".
+By using the following nexus-clean.yaml, it is possible to set a retention period of 1 day and 1 version for
+all versions, but keep the versions that do not contain "BUILD" or "SNAPSHOT" for at least one year.
+
+```
+default:
+  max_versions: 5
+  last_downloaded:
+    amount: 30
+    unit: day
+
+my-repo:
+  mygrp/myapp-.*:
+    max_versions: 1
+    last_downloaded:
+      amount: 1
+      unit: day
+    "^((?!SNAPSHOT|BUILD).)*$":
+      last_downloaded:
+        amount: 1
+        unit: year
 ```
 
 ## How to retrieve config file values
