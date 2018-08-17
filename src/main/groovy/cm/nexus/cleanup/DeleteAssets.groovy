@@ -64,7 +64,7 @@ class DeleteAssets {
                                 component: ${component.name()}, ${component.version()}, updated: ${component.lastUpdated()}, count: ${newerComponentVersions}/$)
                             def assetConfig = config.getConfigForAsset(repoName, component.name(), component.version())
                             if (isNoLongerNeeded(assetConfig, asset, newerComponentVersions)) {
-                                log.info($/Delete component ${component.name()}, version ${component.version()} as it has not been downloaded since ${retainDays} days and has a newer version/$)
+                                log.info($/Delete component ${component.name()}, version ${component.version()} as it has not been downloaded since ${Config.getRetainPeriodInDays(assetConfig)} days and has a newer version/$)
                                 if (deleteComponents) {
                                     // this also deletes the other assets within this component
                                     tx.deleteComponent(component)
