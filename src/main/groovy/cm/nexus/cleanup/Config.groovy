@@ -91,8 +91,8 @@ class Config {
             if (matchingKey != null) {
                 return Optional.of(configItems.get(matchingKey) as Map)
             }
-        } catch (Exception e) {
-            log.warn("WARNING: version contains no definition in configuration file: {}\",matchingKey)")
+        } catch (ignore) {
+            log.warn("WARNING: version contains no definition in configuration file: {}", matchingKey ?: '')
         }
         return Optional.empty()
     }
