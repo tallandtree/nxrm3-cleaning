@@ -180,6 +180,8 @@ my-repo:
         unit: year
 ```
 
+See also: https://www.regextester.com/
+
 ## How to retrieve config file values
 
 ### Docker, Npm and NuGet repositories
