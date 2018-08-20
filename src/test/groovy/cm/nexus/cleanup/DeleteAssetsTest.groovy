@@ -64,7 +64,7 @@ class DeleteAssetsTest extends Specification {
         repo.repositoryManager >> repoManager
         log = Mock(Logger)
         cleanupConfig =
-                new Config([default: [max_versions: 10, last_downloaded: [amount: 30, unit: 'day']], (REPO_NAME): [last_downloaded: [amount: 40, unit: 'day']]])
+                new Config(log,[default: [max_versions: 10, last_downloaded: [amount: 30, unit: 'day']], (REPO_NAME): [last_downloaded: [amount: 40, unit: 'day']]])
         sut = new DeleteAssets(log, repo, null, null, REPO_NAME.split(), cleanupConfig)
     }
 
@@ -200,7 +200,7 @@ class DeleteAssetsTest extends Specification {
     def "asset is not deleted when marked to be kept forever"() {
         given:
             def cleanupConfig =
-                    new Config([default: [max_versions: 10, last_downloaded: [amount: 30, unit: 'day']],
+                    new Config(log,[default: [max_versions: 10, last_downloaded: [amount: 30, unit: 'day']],
                                 (REPO_NAME): [last_downloaded: [amount: 40, unit: 'day'],
                                               (COMPONENT_NAME): [max_versions: 7, last_downloaded: [amount: 50, unit: 'day'],
                                                         (COMPONENT_VERSION)  : [keep: 'forever']]]])

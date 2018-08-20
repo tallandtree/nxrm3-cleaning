@@ -1,4 +1,5 @@
 package cm.nexus.cleanup
+import org.slf4j.Logger
 
 class Config {
     public static final String DEFAULT = "default"
@@ -11,8 +12,10 @@ class Config {
     private Map configItems
     private Map defaultItems
     private int defaultDaysToRetain
+    private final Logger log
 
-    Config(Map configItems) {
+    Config(Logger log, Map configItems) {
+        this.log = log
         this.configItems = configItems
         defaultItems = configItems.get(DEFAULT) as Map
         def downloadItems = defaultItems.get(LAST_DOWNLOADED) as Map
@@ -69,7 +72,7 @@ class Config {
         return getConfigItems(result, configItems, [repoName, componentName, assetName])
     }
 
-    private static Map getConfigItems(Map result, Map configItems, List<String> itemsKeys) {
+    private Map getConfigItems(Map result, Map configItems, List<String> itemsKeys) {
         def itemsKey = itemsKeys.get(0)
         def optionalSubConfigItems = findConfigItems(configItems, itemsKey)
         if (!optionalSubConfigItems.isPresent()) return clean(result)
@@ -78,13 +81,18 @@ class Config {
         return itemsKeys.size() > 1 ? getConfigItems(result, subConfigItems, itemsKeys[1..-1]) : clean(result)
     }
 
-    private static Optional<Map> findConfigItems(Map configItems, String itemsKey) {
-        def matchingKey = configItems.keySet().find {itemsKey == it}
-        if (matchingKey == null) {
-            matchingKey = configItems.keySet().find {itemsKey ==~ /$it/}
-        }
-        if (matchingKey != null) {
-            return Optional.of(configItems.get(matchingKey) as Map)
+    private Optional<Map> findConfigItems(Map configItems, String itemsKey) {
+        def matchingKey
+        try {
+            matchingKey = configItems.keySet().find { itemsKey == it }
+            if (matchingKey == null) {
+                matchingKey = configItems.keySet().find { itemsKey ==~ /$it/ }
+            }
+            if (matchingKey != null) {
+                return Optional.of(configItems.get(matchingKey) as Map)
+            }
+        } catch (Exception e) {
+            log.warn("WARNING: version contains no definition in configuration file: {}\",matchingKey)")
         }
         return Optional.empty()
     }

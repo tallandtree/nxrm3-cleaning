@@ -104,28 +104,28 @@ class DeleteAssets {
     }
 }
 
-/* Examples nexus task: 
- *
-import groovy.lang.GroovyClassLoader
-def gcl = this.class.classLoader
-gcl.clearCache()
-gcl.addClasspath("/opt/sonatype/sonatype-work/nexus3/cm/scripts/groovy")
-def configReaderClass = gcl.loadClass("cm.nexus.cleanup.ConfigReader")
-def deleteAssetsClass = gcl.loadClass("cm.nexus.cleanup.DeleteAssets")
-def config = configReaderClass.readConfig("/opt/sonatype/sonatype-work/nexus3/cm/scripts/resources")
-def cleaner =  deleteAssetsClass.newInstance(log, repository, "com/.*", ".*", (String[]) ["team-x-mvn-release"], config)
-cleaner.dryRun()
- *
- */
+// * Examples nexus task:
+// *
+//import groovy.lang.GroovyClassLoader
+//def gcl = this.class.classLoader
+//gcl.clearCache()
+//gcl.addClasspath("/opt/sonatype/sonatype-work/nexus3/cm/scripts/groovy")
+//def configReaderClass = gcl.loadClass("cm.nexus.cleanup.ConfigReader")
+//def deleteAssetsClass = gcl.loadClass("cm.nexus.cleanup.DeleteAssets")
+//def config = configReaderClass.readConfig(log, "/opt/sonatype/sonatype-work/nexus3/cm/scripts/resources")
+//def cleaner =  deleteAssetsClass.newInstance(log, repository, "com/.*", ".*", (String[]) ["team-x-mvn-release"], config)
+//cleaner.dryRun()
+// *
+// */
 
-/* Filter examples: 
- *
-def filter1 = ".*"
-def filter2 = "^org/myothercompany/app/.*"
-def filter2 = "^com/.*/app/.*"
-// Use "(?!filteroutstring)/.*" to filter out assets not to be cleaned.
-def filter2 = "(?!com/myothercompany/app/).*"
-def filter2 = ".*"
-def cleaner =  deleteAssetsClass.newInstance(log, repository, "com/.*", "(?!com/nl/host/myapp).*", (String[]) ["team-x-mvn-release"], config)
- *
- */
+// * Filter examples:
+// *
+//def filter1 = ".*"
+//def filter2 = "^org/myothercompany/app/.*"
+//def filter2 = "^com/.*/app/.*"
+//// Use "(?!filteroutstring)/.*" to filter out assets not to be cleaned.
+//def filter2 = "(?!com/myothercompany/app/).*"
+//def filter2 = ".*"
+//def cleaner =  deleteAssetsClass.newInstance(log, repository, "com/.*", "(?!com/nl/host/myapp).*", (String[]) ["team-x-mvn-release"], config)
+// *
+// */
