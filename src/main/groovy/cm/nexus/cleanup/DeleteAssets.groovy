@@ -6,6 +6,7 @@ import org.sonatype.nexus.repository.Repository
 import org.sonatype.nexus.repository.storage.Asset
 import org.sonatype.nexus.repository.storage.Component
 import org.sonatype.nexus.repository.storage.StorageFacet
+import org.slf4j.Logger
 // cleaning groovy class for the following repository types:
 // maven2-proxy, maven2-hosted
 // docker-hosted, docker-proxy
@@ -18,10 +19,10 @@ class DeleteAssets {
     private String filter2
     private String[] repositoryNames
     private final repoManager
-    private final log
+    private final Logger log
     private final Config config
 
-    DeleteAssets(log, repo, String filter1, String filter2, String[] repositoryNames, Config config) {
+    DeleteAssets(Logger log, repo, String filter1, String filter2, String[] repositoryNames, Config config) {
         this.config = config
         this.filter1 = filter1 ?: ".*"
         this.filter2 = filter2 ?: ".*"
