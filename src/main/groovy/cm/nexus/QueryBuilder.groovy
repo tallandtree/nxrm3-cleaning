@@ -10,7 +10,7 @@ import org.sonatype.nexus.repository.storage.Query
 class QueryBuilder {
     public static final DateTimeFormatter fmt = DateTimeFormat.forPattern('yyyy-MM-dd HH:mm:ss')
 
-    static Query buildNewerComponentCountQuery(Component component, Asset asset) {
+    static Query buildNewerComponentCountQuery(Component component, Asset asset, String matchingKey) {
         Query.Builder builder = Query.builder()
                 .where('name = ')
                 .param(component.name())
@@ -20,6 +20,8 @@ class QueryBuilder {
                 // normally component.lastUpdated() should be used, but this timestamp is not updated correctly by Nexus for Docker components
                 // asset.lastUpdated() does not give the expected results either, but asset.blobUpdated() does
                 .param(asset.blobUpdated().toString(fmt))
+                .and('version MATCHES ')
+                .param(matchingKey)
 
         if (component.group()) {
             builder.and('group = ').param(component.group())

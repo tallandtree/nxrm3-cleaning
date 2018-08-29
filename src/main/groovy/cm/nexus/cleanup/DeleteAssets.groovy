@@ -1,6 +1,7 @@
 package cm.nexus.cleanup
 
 import cm.nexus.QueryBuilder
+
 import org.joda.time.DateTime
 import org.sonatype.nexus.repository.Repository
 import org.sonatype.nexus.repository.storage.Asset
@@ -59,13 +60,14 @@ class DeleteAssets {
                         Component component = tx.findComponent(asset.componentId())
                         // if component not found, the asset and component was already deleted when processing a previously found asset
                         if (component != null) {
+                            def assetConfigPair = config.getConfigForAsset(repoName, component.name(), component.version())
                             // Check if there are newer components of the same name. Newer means components updated after the current asset was last updated.
-                            def newerComponentVersions = tx.countComponents(QueryBuilder.buildNewerComponentCountQuery(component, asset), [repo])
+                            def newerComponentVersions = tx.countComponents(QueryBuilder.buildNewerComponentCountQuery(component, asset, assetConfigPair.key), [repo])
                             log.info($/Asset:  ${asset.name()}, lastDownloaded: ${asset.lastDownloaded()}, 
-                                component: ${component.name()}, ${component.version()}, updated: ${component.lastUpdated()}, count: ${newerComponentVersions}/$)
-                            def assetConfig = config.getConfigForAsset(repoName, component.name(), component.version())
-                            if (isNoLongerNeeded(assetConfig, asset, newerComponentVersions)) {
-                                log.info($/Delete component ${component.name()}, version ${component.version()} as it has not been downloaded since ${Config.getRetainPeriodInDays(assetConfig)} days and has a newer version/$)
+                                component: ${component.name()}, ${component.version()}, updated: ${component.lastUpdated()}, 
+                                count: ${newerComponentVersions}, max versions: ${assetConfigPair.config.get(Config.MAX_VERSIONS)} matchingKey: ${assetConfigPair.key}/$)
+                            if (isNoLongerNeeded(assetConfigPair.config, asset, newerComponentVersions)) {
+                                log.info($/Delete component ${component.name()}, version ${component.version()} as it has not been downloaded since ${Config.getRetainPeriodInDays(assetConfigPair.config)} days and has a newer version/$)
                                 if (deleteComponents) {
                                     // this also deletes the other assets within this component
                                     tx.deleteComponent(component)

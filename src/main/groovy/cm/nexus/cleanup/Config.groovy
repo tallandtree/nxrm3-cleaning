@@ -40,9 +40,9 @@ class Config {
 
     int getShortestRetainPeriodForRepo(String repoName) {
         def minDaysToRetain = defaultDaysToRetain
-        def optionalRepoConfigItems = findConfigItems(configItems, repoName)
-        if (optionalRepoConfigItems.isPresent()) {
-            def repoConfigItems = optionalRepoConfigItems.get()
+        def optionalPairRepoConfigItems = findConfigItems(configItems, repoName)
+        if (optionalPairRepoConfigItems.isPresent()) {
+            def repoConfigItems = optionalPairRepoConfigItems.get().config
             if (repoConfigItems.containsKey(LAST_DOWNLOADED)) {
                 minDaysToRetain = Integer.MAX_VALUE
             }
@@ -67,21 +67,21 @@ class Config {
         return minDaysToRetain
     }
 
-    Map getConfigForAsset(String repoName, String componentName, String assetName) {
-        def result = new HashMap(defaultItems)
+    Pair getConfigForAsset(String repoName, String componentName, String assetName) {
+        def result = new Pair("", new HashMap(defaultItems))
         return getConfigItems(result, configItems, [repoName, componentName, assetName])
     }
 
-    private Map getConfigItems(Map result, Map configItems, List<String> itemsKeys) {
+    private Pair getConfigItems(Pair result, Map configItems, List<String> itemsKeys) {
         def itemsKey = itemsKeys.get(0)
         def optionalSubConfigItems = findConfigItems(configItems, itemsKey)
         if (!optionalSubConfigItems.isPresent()) return clean(result)
         def subConfigItems = optionalSubConfigItems.get()
-        saveItemSettings(result, subConfigItems)
-        return itemsKeys.size() > 1 ? getConfigItems(result, subConfigItems, itemsKeys[1..-1]) : clean(result)
+        saveItemSettings(result, subConfigItems, 1 == itemsKeys.size())
+        return itemsKeys.size() > 1 ? getConfigItems(result, subConfigItems.config, itemsKeys[1..-1]) : clean(result)
     }
 
-    private Optional<Map> findConfigItems(Map configItems, String itemsKey) {
+    private Optional<Pair> findConfigItems(Map configItems, String itemsKey) {
         def matchingKey
         try {
             matchingKey = configItems.keySet().find { itemsKey == it }
@@ -89,7 +89,8 @@ class Config {
                 matchingKey = configItems.keySet().find { itemsKey ==~ /$it/ }
             }
             if (matchingKey != null) {
-                return Optional.of(configItems.get(matchingKey) as Map)
+                def matchingPair = new Pair(matchingKey as String, configItems.get(matchingKey) as Map)
+                return Optional.of(matchingPair as Pair)
             }
         } catch (ignore) {
             log.warn("WARNING: version contains no definition in configuration file: {}", matchingKey ?: '')
@@ -97,15 +98,18 @@ class Config {
         return Optional.empty()
     }
 
-    private static void saveItemSettings(Map result, Map configItems) {
-        def maxVersions = configItems.get(MAX_VERSIONS)
-        def lastDownloaded = configItems.get(LAST_DOWNLOADED)
+    private static void saveItemSettings(Pair result, Pair configItems, Boolean isVersion) {
+        def maxVersions = configItems.config.get(MAX_VERSIONS)
+        def lastDownloaded = configItems.config.get(LAST_DOWNLOADED)
         if (maxVersions != null || lastDownloaded != null) {
-            result.remove(KEEP)
+            result.config.remove(KEEP)
         }
-        storeIfPresent(result, MAX_VERSIONS, maxVersions)
-        storeIfPresent(result, LAST_DOWNLOADED, lastDownloaded)
-        storeIfPresent(result, KEEP, configItems.get(KEEP))
+        storeIfPresent(result.config, MAX_VERSIONS, maxVersions)
+        storeIfPresent(result.config, LAST_DOWNLOADED, lastDownloaded)
+        storeIfPresent(result.config, KEEP, configItems.config.get(KEEP))
+        if (isVersion) {
+            result.key = configItems.key
+        }
     }
 
     private static storeIfPresent(Map result, String itemKey, Object value) {
@@ -114,10 +118,10 @@ class Config {
         }
     }
 
-    private static final Map clean(Map result) {
-        if (result.containsKey(KEEP)) {
-            result.remove(MAX_VERSIONS)
-            result.remove(LAST_DOWNLOADED)
+    private static final Pair clean(Pair result) {
+        if (result.config.containsKey(KEEP)) {
+            result.config.remove(MAX_VERSIONS)
+            result.config.remove(LAST_DOWNLOADED)
         }
         return result
     }
