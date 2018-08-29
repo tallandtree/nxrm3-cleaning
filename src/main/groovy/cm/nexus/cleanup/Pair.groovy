@@ -1,4 +1,4 @@
-package ccv.cm.nexus.cleanup
+package cm.nexus.cleanup
 
 class Pair {
     String key
