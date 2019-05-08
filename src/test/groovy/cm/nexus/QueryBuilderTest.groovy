@@ -64,7 +64,7 @@ class QueryBuilderTest extends Specification {
         def query = QueryBuilder.findAssetsQuery(RETAIN_DAYS, NAME_FILTER1, NAME_FILTER2)
 
         then:
-        query.where == "last_downloaded < :p0 AND name MATCHES :p1 AND name MATCHES :p2"
+        query.where == "(last_downloaded < :p0 OR last_downloaded IS NULL) AND name MATCHES :p1 AND name MATCHES :p2"
         query.parameters.get("p0") == DateTime.now().minusDays(RETAIN_DAYS).toString(QueryBuilder.fmt)
         query.parameters.get("p1") == NAME_FILTER1
         query.parameters.get("p2") == NAME_FILTER2

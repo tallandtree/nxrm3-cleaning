@@ -1,13 +1,12 @@
 package cm.nexus.cleanup
 
 import cm.nexus.QueryBuilder
-
 import org.joda.time.DateTime
+import org.slf4j.Logger
 import org.sonatype.nexus.repository.Repository
 import org.sonatype.nexus.repository.storage.Asset
 import org.sonatype.nexus.repository.storage.Component
 import org.sonatype.nexus.repository.storage.StorageFacet
-import org.slf4j.Logger
 // cleaning groovy class for the following repository types:
 // maven2-proxy, maven2-hosted
 // docker-hosted, docker-proxy
@@ -54,7 +53,7 @@ class DeleteAssets {
                 tx.begin()
 
                 for (Asset asset in tx.findAssets(QueryBuilder.findAssetsQuery(retainDays, filter1, filter2), [repo])) {
-                    log.info("Asset found: ${asset.name()}, last downloaded: ${asset.lastDownloaded()}, last updated: ${asset.blobUpdated()}")
+                    log.debug("Asset found: ${asset.name()}, last downloaded: ${asset.lastDownloaded()}, last updated: ${asset.blobUpdated()}")
 
                     if (asset.componentId() != null) {
                         Component component = tx.findComponent(asset.componentId())
@@ -63,9 +62,9 @@ class DeleteAssets {
                             def assetConfigPair = config.getConfigForAsset(repoName, component.name(), component.version())
                             // Check if there are newer components of the same name. Newer means components updated after the current asset was last updated.
                             def newerComponentVersions = tx.countComponents(QueryBuilder.buildNewerComponentCountQuery(component, asset, assetConfigPair.key), [repo])
-                            log.info($/Asset:  ${asset.name()}, lastDownloaded: ${asset.lastDownloaded()}, 
-                                component: ${component.name()}, ${component.version()}, updated: ${component.lastUpdated()}, 
-                                count: ${newerComponentVersions}, max versions: ${assetConfigPair.config.get(Config.MAX_VERSIONS)} matchingKey: ${assetConfigPair.key}/$)
+                            log.debug("\n\tAsset:  ${asset.name()}, lastDownloaded: ${asset.lastDownloaded()}, updated: ${asset.blobUpdated()}\n"+
+                                    "\tcomponent: ${component.name()}, ${component.version()}, updated: ${component.lastUpdated()}\n"+
+                                    "\tcount: ${newerComponentVersions}, max versions: ${assetConfigPair.config.get(Config.MAX_VERSIONS)} matchingKey: ${assetConfigPair.key}, ")
                             if (isNoLongerNeeded(assetConfigPair.config, asset, newerComponentVersions)) {
                                 log.info($/Delete component ${component.name()}, version ${component.version()} as it has not been downloaded since ${Config.getRetainPeriodInDays(assetConfigPair.config)} days and has a newer version/$)
                                 if (deleteComponents) {
@@ -87,6 +86,7 @@ class DeleteAssets {
                 log.warn("Cleanup failed!!!")
                 log.warn("Exception details: {}", e.toString())
                 log.warn("Rolling back storage transaction")
+                e.printStackTrace()
                 tx.rollback()
             } finally {
                 tx.close()
@@ -102,13 +102,18 @@ class DeleteAssets {
         if (newerVersions < (assetConfig.get(Config.MAX_VERSIONS) as int)) {
             return false
         }
-        def daysToRetain = Config.getRetainPeriodInDays(assetConfig)
-        return DateTime.now().minusDays(daysToRetain).withTimeAtStartOfDay() > asset.lastDownloaded().withTimeAtStartOfDay()
+        def minimumToRetainDate = DateTime.now().minusDays(Config.getRetainPeriodInDays(assetConfig)).withTimeAtStartOfDay()
+        log.debug($/Asset retainDays: ${Config.getRetainPeriodInDays(assetConfig)}/$)
+        if (asset.lastDownloaded() == null) {
+            return minimumToRetainDate > asset.blobUpdated()
+        }
+        else {
+            return minimumToRetainDate > asset.lastDownloaded().withTimeAtStartOfDay()
+        }
     }
 }
 
-// * Examples nexus task:
-// *
+/* Examples nexus task: */
 //import groovy.lang.GroovyClassLoader
 //def gcl = this.class.classLoader
 //gcl.clearCache()
@@ -116,19 +121,14 @@ class DeleteAssets {
 //def configReaderClass = gcl.loadClass("cm.nexus.cleanup.ConfigReader")
 //def deleteAssetsClass = gcl.loadClass("cm.nexus.cleanup.DeleteAssets")
 //def config = configReaderClass.readConfig(log, "/opt/sonatype/sonatype-work/nexus3/cm/scripts/resources")
-//def cleaner =  deleteAssetsClass.newInstance(log, repository, "com/.*", ".*", (String[]) ["team-x-mvn-release"], config)
+//def cleaner =  deleteAssetsClass.newInstance(log, repository, "com/.*", ".*", (String[]) ["my-mvn-repo"], config)
 //cleaner.dryRun()
-// *
-// */
 
-// * Filter examples:
-// *
+/* Filter examples */
 //def filter1 = ".*"
 //def filter2 = "^org/myothercompany/app/.*"
 //def filter2 = "^com/.*/app/.*"
-//// Use "(?!filteroutstring)/.*" to filter out assets not to be cleaned.
+// Use "(?!filteroutstring)/.*" to filter out assets not to be cleaned.
 //def filter2 = "(?!com/myothercompany/app/).*"
 //def filter2 = ".*"
-//def cleaner =  deleteAssetsClass.newInstance(log, repository, "com/.*", "(?!com/nl/host/myapp).*", (String[]) ["team-x-mvn-release"], config)
-// *
-// */
+//def cleaner =  deleteAssetsClass.newInstance(log, repository, "com/.*", "(?!com/nl/host/myapp).*", (String[]) ["my-mvn-repo"], config)

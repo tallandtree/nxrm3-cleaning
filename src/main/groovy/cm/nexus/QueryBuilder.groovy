@@ -32,7 +32,7 @@ class QueryBuilder {
 
     static Query findAssetsQuery(int maxDays, String nameFilter1, String nameFilter2) {
         return Query.builder()
-		.where('(last_downloaded <')
+		.where('(last_downloaded < ')
                 .param(DateTime.now().minusDays(maxDays).toString(fmt))
                 .or('last_downloaded IS NULL)')
                 .and('name MATCHES ')
