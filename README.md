@@ -239,18 +239,20 @@ for example in /opt/sonatype/sonatype-work/nexus3/cm/scripts folder.
 Configure a task in Nexus with the following content:
 
 ```
-import groovy.lang.GroovyClassLoader
-def gcl = this.class.classLoader
-gcl.clearCache()
-gcl.addClasspath("/opt/sonatype/sonatype-work/nexus3/cm/scripts/groovy")                                         
-def configReaderClass = gcl.loadClass("cm.nexus.cleanup.ConfigReader")
-def deleteAssetsClass = gcl.loadClass("cm.nexus.cleanup.DeleteAssets")
-def config = configReaderClass.readConfig("/opt/sonatype/sonatype-work/nexus3/cm/scripts/resources")
-
-def cleaner =  deleteAssetsClass.newInstance(log, repository, "com/.*", ".*", (String[]) ["team1-mvn-release"], config)
+import groovy.lang.GroovyClassLoader;
+def gcl = this.class.classLoader;
+gcl.clearCache();
+gcl.addClasspath("/opt/sonatype/sonatype-work/nexus3/cm/scripts/groovy");
+def configReaderClass = gcl.loadClass("cm.nexus.cleanup.ConfigReader");
+def deleteAssetsClass = gcl.loadClass("cm.nexus.cleanup.DeleteAssets");
+def config = configReaderClass.readConfig(log, "/opt/sonatype/sonatype-work/nexus3/cm/scripts/resources");
+def cleaner =  deleteAssetsClass.newInstance(log, repository, ".*", ".*", (String[]) ["cc-pa-docker-internal","cc-tp-docker-internal","cc-oc-docker-internal"], config);
 cleaner.dryRun()
+
 ```
-Above example logs which assets will be deleted if the cleaning is run.
+
+Above example logs which assets will be deleted if the cleaning is run. Note that it is possible with the third and fourth argument of deleteAssetsClass.newInstance, it is possible to add a filter what should or should not be cleaned. See the groovy code of DeleteAssets for filter examples.
+
 To actually clean, change the last statement to:
 ```
 cleaner.clean()
