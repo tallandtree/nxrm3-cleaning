@@ -251,7 +251,7 @@ cleaner.dryRun()
 
 ```
 
-Above example logs which assets will be deleted if the cleaning is run. Note that it is possible with the third and fourth argument of deleteAssetsClass.newInstance, it is possible to add a filter what should or should not be cleaned. See the groovy code of DeleteAssets for filter examples.
+Above example logs which assets will be deleted if the cleaning is run. Note that with the third and fourth argument of deleteAssetsClass.newInstance, it is possible to add a filter what should or should not be cleaned. See the groovy code of DeleteAssets for filter examples.
 
 To actually clean, change the last statement to:
 ```
