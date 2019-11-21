@@ -13,6 +13,8 @@ The cleaning supports and is tested with the following repository types:
 - nuget
 - npm
 
+These cleaning scripts are tested with NXRM3 version 3.19.
+
 ## The nexus-cleanup.yaml file format
 
 ```
